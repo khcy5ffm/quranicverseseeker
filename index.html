@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset = "utf-8">
+
+    <title>verse4u</title>
+
+    <script src="jquery-3.3.1.js"></script>
+  </head>
+
+  <body>
+    <div id = "title">
+      <a href = "index.html"><h1>verse4u</h1></a>
+    </div>
+
+    <div id = "search">
+      surah: <input name = "surah" type = "number" value = "1" min = "1" max = "114" onchange = "setAyahMenu()" hidden> <select name = "surah" size = "1" onchange = "setAyahMenu()"></select>
+
+      ayah: <input name = "ayah" type = "number" value = "1" min = "1" max = "7" onclick = "loadQuran()">
+
+      <button>random</button>
+
+      search
+    </div>
+
+    <div id="display">
+    </div>
+
+    <script>
+      var qText = null;
+      var qTrans = null;
+
+      function reqQuranXML() {
+        var qTextReq = new XMLHttpRequest();
+        var qTransReq = new XMLHttpRequest();
+
+        qTextReq.onreadystatechange = function() {
+          if(this.readyState == 4 && this.status == 200) {
+            qText = this.responseXML;
+          }
+        };
+
+        qTransReq.onreadystatechange = function() {
+          if(this.readyState == 4 && this.status == 200) {
+            qTrans = this.responseXML;
+          }
+        };
+
+        qTextReq.open("GET", "quran-simple.xml", false);
+        qTransReq.open("GET", "en.sahih.xml", false);
+        qTextReq.send();
+        qTransReq.send();
+      }
+
+      function loadSurahMenu() {
+        var i = 2;
+        var opt = "";
+        var options = "";
+
+        opt = "<option value = \"1\" selected>1 | " + qTrans.getElementsByTagName("sura")[0].getAttribute("name") + "</option>";
+        options += opt;
+
+        for(i; i <= 114; i++) {
+          opt = "<option value = \"" + i + "\">" + i + " | " + qTrans.getElementsByTagName("sura")[i - 1].getAttribute("name") + "</option>";
+          options += opt;
+        }
+
+        document.getElementsByName("surah")[1].innerHTML = options;
+      }
+
+      function setAyahMenu() {
+        var sura = document.getElementsByName("surah")[1].value - 1;
+
+        document.getElementsByName("ayah")[0].value = 1;
+        document.getElementsByName("ayah")[0].max = qText.getElementsByTagName("sura")[sura].getElementsByTagName("aya").length;
+
+        loadQuran();
+      }
+
+      function loadQuran() {
+        var i = 0;
+        var text = "<br />";
+        var trans = "<br />";
+        //var surah = document.getElementsByName("surah")[0].value;
+        var surah = document.getElementsByName("surah")[1].value;
+        var ayah = document.getElementsByName("ayah")[0].value;
+
+        if(qText == null || qTrans == null) {
+          return "Translation loading failed.";
+        } else {
+          text += qText.getElementsByTagName("sura")[surah - 1].getElementsByTagName("aya")[ayah - 1].getAttribute("text");
+          trans += qTrans.getElementsByTagName("sura")[surah - 1].getElementsByTagName("aya")[ayah - 1].getAttribute("text");
+
+          document.getElementById("display").innerHTML = text + trans;
+
+          //for(i; i < text.length; i++) {
+          //  text = "<br />" + text[i].getAttribute("text");
+          //  document.getElementById("display").innerHTML += text;
+          //}
+        }
+      }
+
+      reqQuranXML();
+      loadSurahMenu();
+      loadQuran();
+    </script>
+  </body>
+</html>
