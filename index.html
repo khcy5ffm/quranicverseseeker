@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -19,9 +18,9 @@
 
       ayah: <input name = "ayah" type = "number" value = "1" min = "1" max = "7" onclick = "loadQuran()">
 
-      <button>random</button>
+      <button onclick = "getRandom()">random</button>
 
-      search
+      <input name = "search" type = "search" onsearch = "getSearch()"> <button onclick = "getSearch()">search</button>
     </div>
 
     <div id="display">
@@ -55,25 +54,25 @@
 
       function loadSurahMenu() {
         var i = 2;
-        var opt = "";
-        var options = "";
+        var option = "";
+        var optionSet = "";
 
-        opt = "<option value = \"1\" selected>1 | " + qTrans.getElementsByTagName("sura")[0].getAttribute("name") + "</option>";
-        options += opt;
+        option = "<option value = \"1\" selected>1 | " + qTrans.getElementsByTagName("sura")[0].getAttribute("name") + "</option>";
+        optionSet += option;
 
         for(i; i <= 114; i++) {
-          opt = "<option value = \"" + i + "\">" + i + " | " + qTrans.getElementsByTagName("sura")[i - 1].getAttribute("name") + "</option>";
-          options += opt;
+          option = "<option value = \"" + i + "\">" + i + " | " + qTrans.getElementsByTagName("sura")[i - 1].getAttribute("name") + "</option>";
+          optionSet += option;
         }
 
-        document.getElementsByName("surah")[1].innerHTML = options;
+        document.getElementsByName("surah")[1].innerHTML = optionSet;
       }
 
       function setAyahMenu() {
-        var sura = document.getElementsByName("surah")[1].value - 1;
+        var surah = document.getElementsByName("surah")[1].value - 1;
 
         document.getElementsByName("ayah")[0].value = 1;
-        document.getElementsByName("ayah")[0].max = qText.getElementsByTagName("sura")[sura].getElementsByTagName("aya").length;
+        document.getElementsByName("ayah")[0].max = qText.getElementsByTagName("sura")[surah].getElementsByTagName("aya").length;
 
         loadQuran();
       }
@@ -87,7 +86,7 @@
         var ayah = document.getElementsByName("ayah")[0].value;
 
         if(qText == null || qTrans == null) {
-          return "Translation loading failed.";
+          document.getElementById("display").innerHTML = "<br />Translation loading failed.";
         } else {
           text += qText.getElementsByTagName("sura")[surah - 1].getElementsByTagName("aya")[ayah - 1].getAttribute("text");
           trans += qTrans.getElementsByTagName("sura")[surah - 1].getElementsByTagName("aya")[ayah - 1].getAttribute("text");
@@ -98,6 +97,54 @@
           //  text = "<br />" + text[i].getAttribute("text");
           //  document.getElementById("display").innerHTML += text;
           //}
+        }
+      }
+
+      function getRandom() {
+        var surah = Math.floor(Math.random() * 114);
+
+        var ayahMax = qText.getElementsByTagName("sura")[surah].getElementsByTagName("aya").length;
+        var ayah = Math.floor(Math.random() * ayahMax);
+
+        document.getElementsByName("surah")[1].value = surah;
+        document.getElementsByName("ayah")[0].max = ayahMax;
+        document.getElementsByName("ayah")[0].value = ayah;
+
+        loadQuran();
+      }
+
+      function getSearch() {
+        var keyword = document.getElementsByName("search")[0].value.toLowerCase();
+        var surah = 0;
+        var ayah;
+        var ayahMax;
+        var text = "";
+        var trans = "";
+        var table = "<br /><table>";
+
+        if(keyword != "") {
+          document.getElementById("display").innerHTML = "<br />Searching...";
+
+          for(surah; surah < 114; surah++) {
+            ayahMax = qText.getElementsByTagName("sura")[surah].getElementsByTagName("aya").length;
+            for(ayah = 0; ayah < ayahMax; ayah++) {
+              trans = "<br />" + qTrans.getElementsByTagName("sura")[surah].getElementsByTagName("aya")[ayah].getAttribute("text");
+
+              if(trans.toLowerCase().includes(keyword)) {
+                table += "<tr><td>" + (surah + 1).toString() + ":" + (ayah + 1).toString() + "</td>";
+
+                text = "<br />" + qText.getElementsByTagName("sura")[surah].getElementsByTagName("aya")[ayah].getAttribute("text");
+
+                table += "<td>" + text + trans + "</td></tr>";
+              }
+            }
+          }
+
+          if(table == "<br /><table>") {
+            document.getElementById("display").innerHTML = "<br />No results found.";
+          } else {
+            document.getElementById("display").innerHTML = table + "</table>";
+          }
         }
       }
 
